@@ -1,16 +1,18 @@
-import { StyleSheet, Text, View, Button } from 'react-native';
+import { StyleSheet, Text, View} from 'react-native';
+import Button from '../components/ui/Button';
+import { Colors } from '../constants/styles';
 
 export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.rootContainer}>
       <Text style={styles.title}>¡Bienvenido a tu Peña!</Text>
-      <Button
-        title="Ver Clasificación"
-        onPress={() => navigation.navigate('Classification')}
-      />
+      <Button onPress={() => navigation.navigate('Classification')}>
+        Ver Clasificacion
+      </Button>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   rootContainer: {
@@ -18,10 +20,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
+    backgroundColor: Colors.background,   // antes default transparente
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 16,
+    color: Colors.textPrimary,            // color principal del texto
   },
 });
+
