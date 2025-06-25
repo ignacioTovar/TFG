@@ -1,5 +1,3 @@
-// ProfileScreen.js  (convertido a paleta minimalista)
-import React from 'react';
 import {
   View,
   Text,
@@ -8,8 +6,12 @@ import {
   StyleSheet,
   Platform
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { logout as firebaseLogout } from '../firebase/auth';
+import Button from '../components/ui/Button'; // si tienes un botón personalizado
+
 import { Colors } from '../constants/styles'; // <— tu nuevo Colors
 
 export default function ProfileScreen({ navigation }) {
@@ -27,6 +29,17 @@ export default function ProfileScreen({ navigation }) {
       asistencias: 7,
     },
   };
+  const authCtx = useContext(AuthContext);
+
+  const handleLogout = async () => {
+    try {
+      await firebaseLogout();  
+      authCtx.logout();        
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
 
   const formatMoney = (amount) => `${amount.toFixed(2)} €`;
 
@@ -96,6 +109,11 @@ export default function ProfileScreen({ navigation }) {
               <Text style={styles.statValue}>{user.stats.asistencias}</Text>
             </View>
           </View>
+        </View>
+      </View>
+      <View style={{ width: '100%', alignItems: 'center', marginTop: 12, marginBottom: 24 }}>
+        <View style={{ width: '60%' }}>
+          <Button onPress={handleLogout}>Cerrar sesión</Button>
         </View>
       </View>
     </View>

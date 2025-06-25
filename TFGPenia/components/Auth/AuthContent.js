@@ -1,13 +1,17 @@
-import { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+// components/Auth/AuthContent.js
+import { useState, useContext } from 'react';
+import { Alert, StyleSheet, View, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import FlatButton from '../ui/FlatButton';
 import AuthForm from './AuthForm';
+import FlatButton from '../ui/FlatButton';
 import { Colors } from '../../constants/styles';
+import { signIn, signUp } from '../../firebase/auth';
+import { AuthContext } from '../../context/AuthContext';
 
-function AuthContent({ isLogin, onAuthenticate }) {
+function AuthContent({ isLogin }) {
   const navigation = useNavigation();
+  const authCtx = useContext(AuthContext);
 
   const [credentialsInvalid, setCredentialsInvalid] = useState({
     email: false,
@@ -17,17 +21,10 @@ function AuthContent({ isLogin, onAuthenticate }) {
   });
 
   function switchAuthModeHandler() {
-    if (isLogin) {
-      navigation.replace('Signup');
-    }
-    else {
-      navigation.replace('Login');
-    }
+    navigation.replace(isLogin ? 'Signup' : 'Login');
   }
 
-  function submitHandler(credentials) {
-    let { email, confirmEmail, password, confirmPassword } = credentials;
-
+  async function submitHandler({ email, confirmEmail, password, confirmPassword }) {
     email = email.trim();
     password = password.trim();
 
@@ -36,12 +33,8 @@ function AuthContent({ isLogin, onAuthenticate }) {
     const emailsAreEqual = email === confirmEmail;
     const passwordsAreEqual = password === confirmPassword;
 
-    if (
-      !emailIsValid ||
-      !passwordIsValid ||
-      (!isLogin && (!emailsAreEqual || !passwordsAreEqual))
-    ) {
-      Alert.alert('Invalid input', 'Please check your entered credentials.');
+    if (!emailIsValid || !passwordIsValid || (!isLogin && (!emailsAreEqual || !passwordsAreEqual))) {
+      Alert.alert('Credenciales inválidas', 'Revisa los datos introducidos.');
       setCredentialsInvalid({
         email: !emailIsValid,
         confirmEmail: !emailIsValid || !emailsAreEqual,
@@ -50,20 +43,34 @@ function AuthContent({ isLogin, onAuthenticate }) {
       });
       return;
     }
-    onAuthenticate({ email, password });
+
+    try {
+      const user = isLogin
+        ? await signIn(email, password)
+        : await signUp(email, password);
+
+      authCtx.authenticate({ uid: user.uid, email: user.email });
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   }
 
   return (
-    <View style={styles.authContent}>
-      <AuthForm
-        isLogin={isLogin}
-        onSubmit={submitHandler}
-        credentialsInvalid={credentialsInvalid}
-      />
-      <View style={styles.buttons}>
-        <FlatButton onPress={switchAuthModeHandler}>
-          {isLogin ? 'Create a new user' : 'Log in instead'}
-        </FlatButton>
+    <View style={styles.rootContainer}>
+      <Text style={styles.title}>
+        {isLogin ? 'Inicia sesión' : 'Regístrate'}
+      </Text>
+      <View style={styles.authBox}>
+        <AuthForm
+          isLogin={isLogin}
+          onSubmit={submitHandler}
+          credentialsInvalid={credentialsInvalid}
+        />
+        <View style={styles.buttons}>
+          <FlatButton onPress={switchAuthModeHandler}>
+            {isLogin ? 'Crear una nueva cuenta' : '¿Ya tienes cuenta? Inicia sesión'}
+          </FlatButton>
+        </View>
       </View>
     </View>
   );
@@ -72,19 +79,32 @@ function AuthContent({ isLogin, onAuthenticate }) {
 export default AuthContent;
 
 const styles = StyleSheet.create({
-  authContent: {
-    marginTop: 64,
-    marginHorizontal: 32,
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: Colors.primary800,
-    elevation: 2,
-    shadowColor: 'black',
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.35,
+  rootContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.primary800,
+    marginBottom: 16,
+  },
+  authBox: {
+    width: '100%',
+    backgroundColor: Colors.primary100,
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
   },
   buttons: {
-    marginTop: 8,
+    marginTop: 12,
+    alignItems: 'center',
   },
 });

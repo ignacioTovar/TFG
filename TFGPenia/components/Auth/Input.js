@@ -1,5 +1,4 @@
 import { View, Text, TextInput, StyleSheet } from 'react-native';
-
 import { Colors } from '../../constants/styles';
 
 function Input({
@@ -16,14 +15,15 @@ function Input({
         {label}
       </Text>
       <TextInput
-        style={[styles.input, isInvalid && styles.inputInvalid]}
-        autoCapitalize={false}
-        autoCapitalize="none"
+        style={[styles.input, isInvalid ? styles.inputInvalid : styles.inputValid]}
         keyboardType={keyboardType}
         secureTextEntry={secure}
         onChangeText={onUpdateValue}
         value={value}
+        autoCapitalize="none"
       />
+      {/* Mensaje de error opcional (puedes gestionarlo con una prop extra si lo deseas) */}
+      {/* {isInvalid && <Text style={styles.errorText}>Este campo no es válido</Text>} */}
     </View>
   );
 }
@@ -32,23 +32,35 @@ export default Input;
 
 const styles = StyleSheet.create({
   inputContainer: {
-    marginVertical: 8,
+    marginVertical: 10,
   },
   label: {
-    color: 'white',
+    color: Colors.primary800,
+    fontSize: 14,
     marginBottom: 4,
+    fontWeight: 'bold',
   },
   labelInvalid: {
     color: Colors.error500,
   },
   input: {
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    backgroundColor: Colors.primary100,
-    borderRadius: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     fontSize: 16,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+  },
+  inputValid: {
+    borderColor: Colors.primary500,
   },
   inputInvalid: {
+    borderColor: Colors.error500,
     backgroundColor: Colors.error100,
+  },
+  errorText: {
+    marginTop: 4,
+    color: Colors.error500,
+    fontSize: 12,
   },
 });
