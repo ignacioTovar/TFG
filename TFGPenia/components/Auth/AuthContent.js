@@ -24,36 +24,46 @@ function AuthContent({ isLogin }) {
     navigation.replace(isLogin ? 'Signup' : 'Login');
   }
 
-  async function submitHandler({ email, confirmEmail, password, confirmPassword }) {
-    email = email.trim();
-    password = password.trim();
+  async function submitHandler({ email, confirmEmail, password, confirmPassword, name }) {
+  email = email.trim();
+  password = password.trim();
 
-    const emailIsValid = email.includes('@');
-    const passwordIsValid = password.length > 6;
-    const emailsAreEqual = email === confirmEmail;
-    const passwordsAreEqual = password === confirmPassword;
+  const emailIsValid = email.includes('@');
+  const passwordIsValid = password.length > 6;
+  const emailsAreEqual = email === confirmEmail;
+  const passwordsAreEqual = password === confirmPassword;
 
-    if (!emailIsValid || !passwordIsValid || (!isLogin && (!emailsAreEqual || !passwordsAreEqual))) {
-      Alert.alert('Credenciales inválidas', 'Revisa los datos introducidos.');
-      setCredentialsInvalid({
-        email: !emailIsValid,
-        confirmEmail: !emailIsValid || !emailsAreEqual,
-        password: !passwordIsValid,
-        confirmPassword: !passwordIsValid || !passwordsAreEqual,
-      });
-      return;
-    }
-
-    try {
-      const user = isLogin
-        ? await signIn(email, password)
-        : await signUp(email, password);
-
-      authCtx.authenticate({ uid: user.uid, email: user.email });
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+  if (!emailIsValid || !passwordIsValid || (!isLogin && (!emailsAreEqual || !passwordsAreEqual))) {
+    Alert.alert('Credenciales inválidas', 'Revisa los datos introducidos.');
+    setCredentialsInvalid({
+      email: !emailIsValid,
+      confirmEmail: !emailIsValid || !emailsAreEqual,
+      password: !passwordIsValid,
+      confirmPassword: !passwordIsValid || !passwordsAreEqual,
+    });
+    return;
   }
+
+  try {
+    let user;
+
+    if (isLogin) {
+      user = await signIn(email, password);
+    } else {
+      const userData = {
+        name: name,
+        phone: '',
+        rol: 'player',
+      };
+
+      user = await signUp(email, password, userData);
+    }
+
+    authCtx.authenticate({ uid: user.uid, email: user.email });
+  } catch (error) {
+    Alert.alert('Error', error.message);
+  }
+}
 
   return (
     <View style={styles.rootContainer}>

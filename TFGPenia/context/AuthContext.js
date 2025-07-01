@@ -1,5 +1,6 @@
-// context/AuthContext.js
-import { createContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase/firebaseConfig';
 
 export const AuthContext = createContext({
   user: null,
@@ -10,21 +11,31 @@ export const AuthContext = createContext({
 function AuthContextProvider({ children }) {
   const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({ uid: firebaseUser.uid, email: firebaseUser.email });
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   function authenticate(userData) {
-    setUser(userData); // Ej: { uid, email }
+    setUser(userData);
   }
 
   function logout() {
     setUser(null);
   }
 
-  const value = {
-    user,
-    authenticate,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, authenticate, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export default AuthContextProvider;

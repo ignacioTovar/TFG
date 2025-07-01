@@ -6,6 +6,7 @@ import Input from './Input';
 import { Colors } from '../../constants/styles';
 
 function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
+  const [enteredName, setEnteredName] = useState('');
   const [enteredEmail, setEnteredEmail] = useState('');
   const [enteredConfirmEmail, setEnteredConfirmEmail] = useState('');
   const [enteredPassword, setEnteredPassword] = useState('');
@@ -19,21 +20,25 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
   } = credentialsInvalid;
 
   function updateInputValueHandler(inputType, enteredValue) {
-    switch (inputType) {
-      case 'email':
-        setEnteredEmail(enteredValue);
-        break;
-      case 'confirmEmail':
-        setEnteredConfirmEmail(enteredValue);
-        break;
-      case 'password':
-        setEnteredPassword(enteredValue);
-        break;
-      case 'confirmPassword':
-        setEnteredConfirmPassword(enteredValue);
-        break;
-    }
+  switch (inputType) {
+    case 'email':
+      setEnteredEmail(enteredValue);
+      break;
+    case 'confirmEmail':
+      setEnteredConfirmEmail(enteredValue);
+      break;
+    case 'password':
+      setEnteredPassword(enteredValue);
+      break;
+    case 'confirmPassword':
+      setEnteredConfirmPassword(enteredValue);
+      break;
+    case 'name':
+      setEnteredName(enteredValue);
+      break;
   }
+}
+
 
   function submitHandler() {
     onSubmit({
@@ -41,11 +46,20 @@ function AuthForm({ isLogin, onSubmit, credentialsInvalid }) {
       confirmEmail: enteredConfirmEmail,
       password: enteredPassword,
       confirmPassword: enteredConfirmPassword,
+      name: enteredName,
     });
   }
 
   return (
     <View>
+      {!isLogin && (
+        <Input
+          label="Nombre"
+          onUpdateValue={updateInputValueHandler.bind(this, 'name')}
+          value={enteredName}
+          isInvalid={false}
+        />
+      )}
       <Input
         label="Correo electrónico"
         onUpdateValue={updateInputValueHandler.bind(this, 'email')}

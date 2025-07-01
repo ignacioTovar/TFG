@@ -7,7 +7,8 @@ import {
   Platform
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { getUserProfile } from '../firebase/userServices';
 import { AuthContext } from '../context/AuthContext';
 import { logout as firebaseLogout } from '../firebase/auth';
 import Button from '../components/ui/Button'; // si tienes un botón personalizado
@@ -15,46 +16,39 @@ import Button from '../components/ui/Button'; // si tienes un botón personaliza
 import { Colors } from '../constants/styles'; // <— tu nuevo Colors
 
 export default function ProfileScreen({ navigation }) {
-  const user = {
-    username: 'JuanjitoKitKAt',
-    name: 'Juan Pérez',
-    avatar: 'https://espanol.motorsport.com/driver/fernando-alonso/463646/',
-    email: 'juan.perez@email.com',
-    multas: 45.50,
-    pagado: 120.00,
-    stats: {
-      jugados: 12,
-      ganados: 8,
-      goles: 15,
-      asistencias: 7,
-    },
-  };
-  const authCtx = useContext(AuthContext);
+  const { user: authUser, logout } = useContext(AuthContext);
+  const [userData, setUserData] = useState(null);
 
-  const handleLogout = async () => {
-    try {
-      await firebaseLogout();  
-      authCtx.logout();        
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
-  };
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const data = await getUserProfile(authUser.uid);
+        setUserData(data);
+      } catch (error) {
+        console.error('Error cargando perfil:', error);
+      }
+    };
+    loadUserData();
+  }, []);
 
+  if (!userData) {
+    return <Text>Cargando...</Text>;
+  }
 
-  const formatMoney = (amount) => `${amount.toFixed(2)} €`;
+  const formatMoney = (amount) => `${(amount || 0).toFixed(2)} €`;
 
   return (
     <View style={styles.container}>
-      {/* ----- HEADER ----- */}
+      {/* Avatar, nombre, email */}
       <View style={styles.headerSafeArea} edges={['top']}>
         <View style={styles.header}>
           <Image
-            source={{ uri: user.avatar }}
+            source={{ uri: userData.avatar || 'https://via.placeholder.com/100' }}
             style={styles.avatar}
           />
-          <Text style={styles.userName}>{user.username}</Text>
+          <Text style={styles.userName}>{userData.name}</Text>
           <TouchableOpacity
-            onPress={() => navigation.navigate('EditProfile')}
+            onPress={() => navigation.navigate('EditProfile', { userData })}
             style={styles.editIcon}
           >
             <Icon name="pencil-outline" size={32} color={Colors.surface} />
@@ -62,58 +56,50 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      {/* ----- CONTENIDO ----- */}
       <View style={styles.content}>
-        {/* Card de Nombre */}
         <View style={styles.card}>
           <Text style={styles.cardLabel}>Nombre</Text>
-          <Text style={styles.cardValue}>{user.name}</Text>
+          <Text style={styles.cardValue}>{userData.name}</Text>
         </View>
-
-        {/* Card de Email */}
         <View style={styles.card}>
           <Text style={styles.cardLabel}>Email</Text>
-          <Text style={styles.cardValue}>{user.email}</Text>
+          <Text style={styles.cardValue}>{userData.email}</Text>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>Telefono</Text>
+          <Text style={styles.cardValue}>{userData.phone}</Text>
         </View>
 
-        {/* Fila Multas / Pagado */}
         <View style={styles.row}>
           <View style={[styles.cardSmall, styles.cardMultas]}>
             <Text style={styles.cardLabelSmall}>Multas</Text>
-            <Text style={styles.cardValueSmall}>{formatMoney(user.multas)}</Text>
+            <Text style={styles.cardValueSmall}>{formatMoney(userData.multas)}</Text>
           </View>
           <View style={[styles.cardSmall, styles.cardPagado]}>
             <Text style={styles.cardLabelSmall}>Pagado</Text>
-            <Text style={styles.cardValueSmall}>{formatMoney(user.pagado)}</Text>
+            <Text style={styles.cardValueSmall}>{formatMoney(userData.pagado)}</Text>
           </View>
         </View>
 
-        {/* Card de Estadísticas */}
-        <View style={styles.statsCard}>
-          <Text style={styles.statsTitle}>Estadísticas 2023/2024</Text>
-          <View style={styles.statsGrid}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Jugados</Text>
-              <Text style={styles.statValue}>{user.stats.jugados}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Ganados</Text>
-              <Text style={styles.statValue}>{user.stats.ganados}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Goles</Text>
-              <Text style={styles.statValue}>{user.stats.goles}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Asistencias</Text>
-              <Text style={styles.statValue}>{user.stats.asistencias}</Text>
+        {/* Estadísticas opcional */}
+        {userData.stats && (
+          <View style={styles.statsCard}>
+            <Text style={styles.statsTitle}>Estadísticas</Text>
+            <View style={styles.statsGrid}>
+              {Object.entries(userData.stats).map(([label, value]) => (
+                <View key={label} style={styles.statItem}>
+                  <Text style={styles.statLabel}>{label}</Text>
+                  <Text style={styles.statValue}>{value}</Text>
+                </View>
+              ))}
             </View>
           </View>
-        </View>
+        )}
       </View>
+
       <View style={{ width: '100%', alignItems: 'center', marginTop: 12, marginBottom: 24 }}>
         <View style={{ width: '60%' }}>
-          <Button onPress={handleLogout}>Cerrar sesión</Button>
+          <Button onPress={async () => { await firebaseLogout(); logout(); }}>Cerrar sesión</Button>
         </View>
       </View>
     </View>
