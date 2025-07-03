@@ -9,6 +9,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useContext, useEffect, useState } from 'react';
 import { getUserProfile } from '../firebase/userServices';
+import { getUserMultasResumen } from '../firebase/multasService';
 import { AuthContext } from '../context/AuthContext';
 import { logout as firebaseLogout } from '../firebase/auth';
 import Button from '../components/ui/Button'; // si tienes un botón personalizado
@@ -22,14 +23,21 @@ export default function ProfileScreen({ navigation }) {
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const data = await getUserProfile(authUser.uid);
-        setUserData(data);
+        const profileData = await getUserProfile(authUser.uid);
+        const resumen = await getUserMultasResumen(authUser.uid);
+
+        setUserData({
+          ...profileData,
+          multas: resumen.multas || 0,
+          pagado: resumen.pagado || 0,
+        });
       } catch (error) {
         console.error('Error cargando perfil:', error);
       }
     };
     loadUserData();
   }, []);
+
 
   if (!userData) {
     return <Text>Cargando...</Text>;

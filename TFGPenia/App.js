@@ -11,6 +11,7 @@ import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import ClassificationScreen from './screens/ClassificationScreen';
+import MultasHistoryScreen from './screens/MultasHistoryScreen';
 import { Colors } from './constants/styles';
 import AuthContextProvider, { AuthContext } from './context/AuthContext';
 
@@ -30,6 +31,7 @@ function HomeStackScreen() {
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Bienvenido' }} />
       <Stack.Screen name="Classification" component={ClassificationScreen} options={{ title: 'Clasificación' }} />
+      <Stack.Screen name="Multas" component={MultasHistoryScreen} options={{ title: 'MultasHistory' }} />
     </Stack.Navigator>
   );
 }

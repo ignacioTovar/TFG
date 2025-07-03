@@ -18,9 +18,9 @@ export default function EditProfileScreen({ navigation }) {
   const uid = authCtx.user?.uid;
 
   const [profile, setProfile] = useState({
-    nombre: '',
+    name: '',
     email: '',
-    telefono: '',
+    phone: '',
   });
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +54,7 @@ export default function EditProfileScreen({ navigation }) {
   };
 
   const handleSave = async () => {
-    if (!profile.nombre.trim()) {
+    if (!profile.name.trim()) {
       Alert.alert('Nombre inválido', 'El nombre no puede estar vacío.');
       return;
     }
@@ -62,7 +62,7 @@ export default function EditProfileScreen({ navigation }) {
       Alert.alert('Email inválido', 'Introduce un email válido.');
       return;
     }
-    if (!profile.telefono.trim()) {
+    if (!profile.phone) {
       Alert.alert('Teléfono inválido', 'El teléfono no puede estar vacío.');
       return;
     }
