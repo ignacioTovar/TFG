@@ -77,7 +77,7 @@ export default function EditProfileScreen({ navigation }) {
       Alert.alert('Perfil actualizado', 'Tus cambios han sido guardados.', [
   {
     text: 'OK',
-    onPress: () => navigation.navigate('ProfileScreen'),
+    onPress: () => navigation.navigate('Profile'),
   },
 ]);
     } catch (error) {

@@ -22,4 +22,5 @@ export const Colors = {
 
   // Si necesitas un color de “error” suave (por ejemplo validación de formulario)
   error: '#D32F2F',
+  success: '#388E3C',
 };

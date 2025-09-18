@@ -1,5 +1,5 @@
 import { db } from './firebaseConfig';
-import { collection, addDoc, doc,getDoc, updateDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, doc,getDoc, getDocs, updateDoc, Timestamp, orderBy, query } from 'firebase/firestore';
 
 export async function getUserMultasResumen(uid) {
   const ref = doc(db, 'multas', uid);
@@ -58,18 +58,32 @@ export async function addPago(uid, cantidad) {
 
   await updateDoc(resumenRef, {
     pagado: increment(cantidad),
+    multas: increment(-cantidad),
   });
 }
 
 export async function getUserHistorico(uid) {
-  const ref = doc(db, 'multas', uid);
-  const historicoRef = collection(ref, 'historico');
+  // 👇 ruta completa para evitar inconsistencias de referencias
+  const historicoRef = collection(db, 'multas', uid, 'historico');
+
+
+  // const q = historicoRef;
   const q = query(historicoRef, orderBy('fecha', 'desc'));
 
   const snap = await getDocs(q);
-  return snap.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    fecha: doc.data().fecha.toDate(), // Convertir Timestamp a Date
-  }));
+
+  return snap.docs.map(d => {
+    const data = d.data();
+    // convierte a Date de forma segura
+    let jsDate = null;
+    if (data.fecha?.toDate) jsDate = data.fecha.toDate();
+    else if (data.fecha instanceof Date) jsDate = data.fecha;
+
+    return {
+      id: d.id,
+      tipo: data.tipo,
+      cantidad: Number(data.cantidad) || 0,
+      fecha: jsDate, // <- Date o null
+    };
+  });
 }
