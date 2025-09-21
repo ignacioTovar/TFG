@@ -10,7 +10,6 @@ import { collection,
   orderBy, 
   query, 
   increment,
-  deleteDoc,
   runTransaction } from 'firebase/firestore';
 
 export async function getUserMultasResumen(uid) {
