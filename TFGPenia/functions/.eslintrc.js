@@ -13,14 +13,11 @@ module.exports = {
     "google",
   ],
   rules: {
-    // Estilo básico razonable:
     "quotes": ["error", "double", {avoidEscape: true}],
     "object-curly-spacing": ["error", "never"],
     "arrow-parens": ["error", "as-needed"],
     "brace-style": ["error", "1tbs", {allowSingleLine: true}],
     "spaced-comment": ["error", "always"],
-
-    // Relajar “ruido”:
     "max-len": ["warn", {code: 120, ignoreUrls: true}],
     "require-jsdoc": "off",
     "camelcase": "off",
