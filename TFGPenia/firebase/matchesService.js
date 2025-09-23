@@ -1,9 +1,11 @@
+// src/matchesService.js
 import { db } from './firebaseConfig';
 import {
-  addDoc, collection, doc, setDoc, updateDoc, getDocs,
-  query, where, orderBy, onSnapshot
+  addDoc, collection, doc, setDoc, updateDoc, getDocs, getDoc,
+  query, orderBy, onSnapshot, limit
 } from 'firebase/firestore';
 
+// Crear partido
 export async function createMatch({ seasonId, date, teamAName, teamBName }) {
   const ref = await addDoc(collection(db, 'matches'), {
     seasonId,
@@ -17,14 +19,26 @@ export async function createMatch({ seasonId, date, teamAName, teamBName }) {
   return ref.id;
 }
 
-export async function upsertPlayerStats(matchId, playerId, { team, goals = 0, assists = 0, yellowCards = 0, redCards = 0 }) {
-  await setDoc(doc(db, 'matches', matchId, 'playerStats', playerId), {
-    team,
-    goals, assists, yellowCards, redCards,
-    updatedAt: new Date(),
-  }, { merge: true });
+// Añadir/actualizar stats de jugador (opción 2: intentamos poner name siempre)
+export async function upsertPlayerStats(
+  seasonId,
+  matchId,
+  playerId,
+  { team, goals = 0, assists = 0, yellowCards = 0, redCards = 0, name }
+) {
+  let finalName = name;
+  if (!finalName) {
+    const p = await getDoc(doc(db, `seasons/${seasonId}/players/${playerId}`));
+    finalName = p.exists() ? (p.data()?.name || playerId) : playerId;
+  }
+  await setDoc(
+    doc(db, 'matches', matchId, 'playerStats', playerId),
+    { team, goals, assists, yellowCards, redCards, name: finalName, updatedAt: new Date() },
+    { merge: true }
+  );
 }
 
+// Cerrar partido
 export async function setFinalScore(matchId, scoreA, scoreB) {
   await updateDoc(doc(db, 'matches', matchId), {
     'teamA.score': Number(scoreA) || 0,
@@ -34,29 +48,37 @@ export async function setFinalScore(matchId, scoreA, scoreB) {
 }
 
 export async function setPlayed(matchId) {
-  await updateDoc(doc(db, 'matches', matchId), {
-    status: 'played',
-    updatedAt: new Date(),
-  });
+  await updateDoc(doc(db, 'matches', matchId), { status: 'played', updatedAt: new Date() });
 }
 
-export async function listMatches(seasonId) {
-  const q = query(
-    collection(db, 'matches'),
-    where('seasonId', '==', seasonId),
-    orderBy('date', 'desc')
-  );
+// Historial (todos los partidos)
+export async function getAllMatches(max = 300) {
+  const q = query(collection(db, 'matches'), orderBy('date', 'desc'), limit(max));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
+export function listenAllMatches(callback, onError) {
+  const q = query(collection(db, 'matches'), orderBy('date', 'desc'));
+  return onSnapshot(q, s => callback(s.docs.map(d => ({ id: d.id, ...d.data() }))), e => onError && onError(e));
+}
 
-export function listenMatches(seasonId, callback) {
-  const q = query(
-    collection(db, 'matches'),
-    where('seasonId', '==', seasonId),
-    orderBy('date', 'desc')
-  );
-  return onSnapshot(q, (snap) => {
-    callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+// Detalle de partido
+export async function getMatch(matchId) {
+  const s = await getDoc(doc(db, 'matches', matchId));
+  return s.exists() ? { id: s.id, ...s.data() } : null;
+}
+
+export function listenMatch(matchId, onData, onError) {
+  return onSnapshot(doc(db, 'matches', matchId), s => onData(s.exists() ? { id: s.id, ...s.data() } : null), onError);
+}
+
+// Stats de jugadores (ya con name en el documento)
+export async function getPlayerStats(matchId) {
+  const snap = await getDocs(collection(db, 'matches', matchId, 'playerStats'));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+export function listenPlayerStats(matchId, onData, onError) {
+  return onSnapshot(collection(db, 'matches', matchId, 'playerStats'),
+    s => onData(s.docs.map(d => ({ id: d.id, ...d.data() }))), onError);
 }

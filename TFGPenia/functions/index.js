@@ -85,8 +85,10 @@ exports.onPlayerStatsWrite = onDocumentWritten("matches/{matchId}/playerStats/{p
       const byMatch = {...(agg.byMatch||{}), [matchId]: C_new};
 
       // Nombre cacheado desde /users
-      const profile = userSnap.exists ? (userSnap.data()||{}) : {};
-      const name = profile.name || agg.name || d.id;
+      const name =
+          agg.name ||                
+          ps.name ||                 
+          (userSnap.exists ? (userSnap.data().name || d.id) : d.id);
 
       tx.set(aggRef, {
         name,

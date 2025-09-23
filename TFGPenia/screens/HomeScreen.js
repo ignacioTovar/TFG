@@ -16,6 +16,12 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         <View style={styles.buttonContainer}>
+          <Button onPress={() => navigation.navigate('MatchesHistory')}>
+            Ver Historial de Partidos
+          </Button>
+        </View>
+
+        <View style={styles.buttonContainer}>
           <Button onPress={() => navigation.navigate('Multas')}>
             Ver Historial Multas/Pagos
           </Button>

@@ -13,6 +13,8 @@ import EditProfileScreen from './screens/EditProfileScreen';
 import ClassificationScreen from './screens/ClassificationScreen';
 import MultasHistoryScreen from './screens/MultasHistoryScreen';
 import AddFinePaymentScreen from './screens/AddFinePaymentScreen';
+import MatchesHistoryScreen from './screens/MatchesHistoryScreen';
+import MatchDetailScreen from './screens/MatchDetailScreen';
 import { Colors } from './constants/styles';
 import AuthContextProvider, { AuthContext } from './context/AuthContext';
 
@@ -34,6 +36,8 @@ function HomeStackScreen() {
       <Stack.Screen name="Classification" component={ClassificationScreen} options={{ title: 'Clasificación' }} />
       <Stack.Screen name="Multas" component={MultasHistoryScreen} options={{ title: 'MultasHistory' }} />
       <Stack.Screen name="AddMultaPago" component={AddFinePaymentScreen} options={{ title: 'AddFinePayment' }} />
+      <Stack.Screen name="MatchesHistory" component={MatchesHistoryScreen} options={{ title: 'Historial' }} />
+      <Stack.Screen name="MatchDetail"   component={MatchDetailScreen}   options={{ title: 'Detalle del partido' }} />
     </Stack.Navigator>
   );
 }
