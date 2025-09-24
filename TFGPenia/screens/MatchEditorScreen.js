@@ -5,8 +5,8 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { createMatch, getMatch, setFinalScore, setPlayed, upsertPlayerStats } from '../firebase/matchesService';
-import { searchSeasonPlayersByName } from '../firebase/playersService';
-import { getActiveSeasonId } from '../firebase/seasonsService';
+import { searchSeasonPlayersByName } from '../firebase/seasonPlayersServices';
+import { getActiveSeasonId } from '../firebase/seasonService';
 
 
 function useDebouncedState(initial, delay = 250) {

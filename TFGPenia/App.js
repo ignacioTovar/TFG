@@ -15,8 +15,14 @@ import MultasHistoryScreen from './screens/MultasHistoryScreen';
 import AddFinePaymentScreen from './screens/AddFinePaymentScreen';
 import MatchesHistoryScreen from './screens/MatchesHistoryScreen';
 import MatchDetailScreen from './screens/MatchDetailScreen';
+
+import AdminHomeScreen from './screens/AdminHomeScreen';
+import MatchEditorScreen from './screens/MatchEditorScreen';           
+import SeasonPlayerScreen from './screens/seasonPlayersScreen';         
+
 import { Colors } from './constants/styles';
-import AuthContextProvider, { AuthContext } from './context/AuthContext';
+import AuthContextProvider, { AuthContext } from './context/AuthContext';                 
+import { useAuthRole } from './hooks/useAuthRole';                    
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -59,8 +65,28 @@ function ProfileStackScreen() {
   );
 }
 
+// --- Admin Stack (solo admins) ---
+function AdminStackScreen() {
+  return (
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: Colors.blueLight },
+          headerTintColor: Colors.surface,
+          headerTitleAlign: 'center',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      >
+        <Stack.Screen name="AdminHome" component={AdminHomeScreen} options={{ title: 'Admin' }} />
+        <Stack.Screen name="SeasonRoster" component={SeasonPlayerScreen} options={{ title: 'Plantilla temporada' }} />
+        <Stack.Screen name="MatchEditor" component={MatchEditorScreen} options={{ title: 'Crear / Editar partido' }} />
+      </Stack.Navigator>
+  );
+}
+
 // --- Tabs ---
 function AppTabs() {
+  const { isAdmin } = useAuthRole();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -69,6 +95,7 @@ function AppTabs() {
           const icons = {
             Inicio: 'home-outline',
             Perfil: 'person-outline',
+            Admin:  'construct-outline',
           };
           return <Icon name={icons[route.name]} size={size} color={color} />;
         },
@@ -79,6 +106,9 @@ function AppTabs() {
       })}
     >
       <Tab.Screen name="Inicio" component={HomeStackScreen} />
+      {isAdmin && (
+        <Tab.Screen name="Admin" component={AdminStackScreen}  />
+      )}
       <Tab.Screen name="Perfil" component={ProfileStackScreen} />
     </Tab.Navigator>
   );

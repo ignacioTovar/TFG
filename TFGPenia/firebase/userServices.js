@@ -1,5 +1,21 @@
 import { db } from './firebaseConfig';
-import { doc, getDoc, getDocs, updateDoc, orderBy, query, collection } from 'firebase/firestore';
+import {
+  doc, getDoc, updateDoc, collection, getDocs, query, orderBy, startAt, endAt, limit
+} from 'firebase/firestore';
+
+/** Búsqueda por prefijo (case-sensitive, eficiente) */
+export async function searchUsersByName(prefix, max = 10) {
+  const users = collection(db, 'users');
+  const q = query(
+    users,
+    orderBy('name'),
+    startAt(prefix),
+    endAt(prefix + '\uf8ff'),
+    limit(max)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
 
 export async function getUserProfile(uid) {
   const userRef = doc(db, 'users', uid);
